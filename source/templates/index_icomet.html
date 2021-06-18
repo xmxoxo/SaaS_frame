@@ -1,0 +1,243 @@
+<!doctype html>
+<html ng-app="app">
+<head>
+    <meta charset="UTF-8">
+    <title>在线应用管理框架</title>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet" type="text/css" media="all">
+	 <!-- <script type="text/javascript" src="static/jquery-2.1.4.min.js"></script> -->
+	<script type="text/javascript" src="static/icomet.js"></script>
+	<script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<script language="JavaScript">
+<!--
+function UrlPOST(method, url, dat, ctype, myfun){
+	if (url=="" && dat==""){return "Error parm";};
+	if (ctype==""){ctype = "application/x-www-form-urlencoded";};
+	$.ajax({
+		type: method, //"POST",
+		url: url,
+		data: dat,
+		contentType: ctype,  //application/json
+		//dataType: dtype,
+		success: function(data){myfun(data);}
+	});
+}
+function UrlGET(url,dat, myfun){
+	if (url=="" && dat==""){return "Error parm";}
+	$.ajax({
+		type: "GET",
+		url: url,
+		data: dat,
+		success: function(data){myfun(data);}
+	});
+}
+
+function showresult(dat){
+	alert('result:' + dat['result'] + '\ndat:'+dat.dat);
+}
+
+function set_opera(cmd, aid){
+	if (cmd=='kill'){
+		//confirm(
+	}
+	dat = 'cmd='+cmd+'&aid='+aid;
+	voc = UrlPOST('POST', '/opera', dat, '', showresult);
+}
+
+function refresh(){
+	//dat = 'cmd='+cmd+'&aid='+aid;
+	UrlPOST('GET', '/status', '', '', function(dat){
+		var data = dat['return'];
+		//alert(data);
+		create_table(data);
+	});
+};
+
+function create_table1(data){
+	$("#J_TbData").empty();
+	for( var i = 0; i < data.length; i++ ) {
+		//动态创建一个tr行标签,并且转换成jQuery对象
+		var $trTemp = $("<tr></tr>");
+
+		//往行里面追加 td单元格
+		$trTemp.append("<td>"+ data[i]['tid'] +"</td>");
+		$trTemp.append("<td>"+ data[i]['pid'] +"</td>");
+		$trTemp.append("<td>"+ data[i]['app_name'] +"</td>");
+		$trTemp.append("<td>"+ data[i]['command_line'] +"</td>");
+		$trTemp.append("<td>"+ data[i]['status'] +"</td>");
+		$trTemp.appendTo("#J_TbData");
+	}
+};
+
+function create_table(data){
+	//$("#J_TbData").empty();
+	var $tbody = $("");
+	for( var i = 0; i < data.length; i++ ) {
+		//动态创建一个tr行标签,并且转换成jQuery对象
+		var $trTemp = $("<tr></tr>");
+
+		//往行里面追加 td单元格
+		$trTemp.append("<td>"+ data[i]['tid'] +"</td>");
+		$trTemp.append("<td>"+ data[i]['pid'] +"</td>");
+		$trTemp.append("<td>"+ data[i]['app_name'] +"</td>");
+		$trTemp.append("<td>"+ data[i]['command_line'] +"</td>");
+		$trTemp.append("<td>"+ data[i]['status'] +"</td>");
+		$tbody.append($trTemp); 
+	};
+	$("#J_TbData").html($tbody)
+};
+
+function create_table(data){
+	var html = '';
+	for( var i = 0; i < data.length; i++ ) {
+		html += `
+			<tr>
+				<td>${ data[i]['tid'] }</td>
+				<td>${ data[i]['pid'] }</td>
+				<td>${ data[i]['app_name'] }</td>
+				<td>${ data[i]['command_line'] }</td>
+				<td>${ data[i]['status'] }</td>
+			</tr>
+		`;
+	}
+	$("#J_TbData").html(html);
+};
+
+$(document).ready(function(){
+
+	$("#bt_new_submit").click(function() {  
+		app_name = $("#app_name")[0].value;
+		app_type = $("#app_type")[0].value;
+		app_config = $("#app_config")[0].value;
+		
+		if (app_name=='' || app_config==''){
+			alert('请输入应用名称及配置!');
+			return
+		}
+		var params = {"app_name": app_name, "app_type": app_type, "app_config": app_config};
+		//var dat = jQuery.param(params);
+		var dat = JSON.stringify(params);
+		//var dat = jQuery.param({'app_config':app_config})
+		//alert(dat);
+		UrlPOST('POST', '/task', dat, 'application/json', function(dat){
+			ret = dat['return'];
+			//alert('result:' + dat['result'] + '\ndat:'+dat.dat);
+			if (ret=='1'){
+				window.location.reload();
+				//alert('应用创建成功');
+			}
+		});
+	}); 
+
+	//btn_kill
+	$("#btn_kill").click(function() {
+		
+	}); 
+
+
+	$(function () {
+			//每秒 定时刷新 不使用icomet时启用
+			//setInterval("refresh()", 1000);
+			});
+	});
+
+	// icomet 推送
+	var icomet_host = '127.0.0.1:8100';
+	var channel = 'task_dat';
+	var comet = new iComet({
+		channel : channel,
+		//sign_url: 'http://' + app_host + '/sign?obj=' + obj,
+		sub_url: 'http://' + icomet_host + '/sub',
+		callback: function(content){
+			// 收到服务器推
+			//alert(content);
+			var data = JSON.parse(content);
+			//alert(data);
+			create_table(data);
+		}
+	});
+
+//-->
+</script>
+</head>
+<body ng-controller="ctrl">
+<div class="container">
+	<CENTER><h2>在线应用管理框架 V_{{version}}</h2><hr /></CENTER>
+
+	<div class="row">
+		<div class="col-md-4"><h3>应用列表</h3></div>
+		<div class="col-md-4"></div>
+		<div class="col-md-4">
+			<button class="btn btn-info" data-toggle="modal" data-target="#myModal">
+			创建新应用
+			</button>
+			<button class="btn btn-info" onclick="javascript:refresh();">立即刷新</button>
+		</div>
+	</div>
+	<table class="table">
+	  <thead>
+		<tr>
+		  <th scope="col">应用ID</th>
+		  <th scope="col">进程PID</th>
+		  <th scope="col">应用名称</th>
+		  <th scope="col">应用命令行</th>
+		  <th scope="col">应用状态</th>
+		</tr>
+	  </thead>
+	  <tbody id="J_TbData">
+		{% for task in task_list%} 
+		<tr>
+		  <td>{{task.get('tid')}}</td>
+		  <td>{{task.get('pid')}}</td>
+		  <td>{{task.get('app_name')}}</td>
+		  <td>{{task.get('command_line')}}</td>
+		  <td>{{task.get('status')}}</td>
+		 {% endfor %}
+	  </tbody>
+	</table>
+
+	<div class="row">
+		<ul class="pager">
+			<li><a href="#">上一页</a></li>
+			<li><a href="#">下一页</a></li>
+		</ul>
+	</div>
+<!-- 模态框（Modal） -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+					&times;
+				</button>
+				<h4 class="modal-title" id="myModalLabel">创建新应用</h4>
+			</div>
+			<div class="modal-body">
+				<div class="">
+				应用类型：</br>
+					<select class='form-control' name="app_type" id="app_type">
+						<option value="0">演示应用</option>
+						<option value="1">数据处理</option>
+						<option value="2">模型训练</option>
+					</select></br>
+				应用名称：</br>
+				<input class='form-control' type="text" name="app_name" id="app_name"></br>
+				配置参数：</br>
+				<input class='form-control' type="text" name="app_config" id="app_config" value=""></br>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+				<button type="button" class="btn btn-primary" id="bt_new_submit">提交</button>
+			</div>
+		</div><!-- /.modal-content -->
+	</div><!-- /.modal -->
+</div>
+
+
+</div>
+</body>
+</html>

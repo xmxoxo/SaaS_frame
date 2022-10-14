@@ -41,7 +41,6 @@ def async_process(f):
 
 app = Sanic('async demo')
 
-
 def dowork(n):
     try:
         # 组织命令行，然后启动程序  start
@@ -92,7 +91,6 @@ async def cpid(request):
     tid = request.args.get('tid')
     pid = request.args.get('pid')
     return response.json({"return": 1})
-
 
 app.run("0.0.0.0", 9100, workers=1)
 

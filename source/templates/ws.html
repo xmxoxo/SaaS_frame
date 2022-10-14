@@ -1,0 +1,79 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+ <head>
+  <meta charset="UTF-8">
+  <title> New Document </title>
+  <meta name="Generator" content="EditPlus">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+ </head>
+
+ <body>
+  <script language="JavaScript">
+  <!--
+var lockReconnect = false // 是否允许重新连接
+var timeout = 1000 * 20 // 心跳间隔
+var reTimeout = 1000 * 10 // 重连间隔
+var timeoutTimer = null // 心跳定时器
+var reTimeoutTimer = null // 重连定时器
+var webSocket = null
+
+function heartCheckStart () {
+  timeoutTimer = setTimeout(function () {
+    webSocket.send('HeartBeat')
+  }, timeout)
+}
+
+function heartCheckReset () {
+  clearTimeout(timeoutTimer)
+  heartCheckStart()
+}
+
+function createWebSocket () {
+  webSocket = new WebSocket('ws://127.0.0.1:8000/feed')
+  webSocket.onopen = function () {
+    console.log('连接成功...')
+    heartCheckStart()
+  }
+  webSocket.onerror = function () {
+    console.log('连接失败...')
+    reConnect()
+  }
+  webSocket.onmessage = function (event) {
+	// 接收到数据
+    console.log(event.data)
+	var label = document.getElementById('label')
+	label.innerText = event.data
+    heartCheckReset()
+  }
+  webSocket.onclose = function (event) {
+    console.log('连接已关闭...')
+    console.log('websocket 断开: ' + event.code + ' ' + event.reason + ' ' + event.wasClean)
+    reConnect()
+  }
+}
+
+// 重连
+function reConnect () {
+  if (lockReconnect) {
+    return
+  }
+  lockReconnect = true
+  // 没连接上会一直重连，设置延迟避免请求过多
+  reTimeoutTimer && clearTimeout(reTimeoutTimer)
+  reTimeoutTimer = setTimeout(function () {
+    createWebSocket()
+    lockReconnect = false
+  }, reTimeout)
+}
+
+createWebSocket()
+	
+  //-->
+  </script>
+<h1>WebSocket Example</h1>
+<span id='label'>
+</span>
+ </body>
+</html>

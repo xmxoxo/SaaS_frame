@@ -2,4 +2,5 @@ requests==2.25.1
 psutil==5.6.1
 tqdm==4.60.0
 sanic_jinja2==0.9.1
+jinja2==2.10
 sanic==19.12.2
